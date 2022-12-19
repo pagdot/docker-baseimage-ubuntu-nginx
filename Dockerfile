@@ -1,39 +1,36 @@
 # syntax=docker/dockerfile:1
 
-FROM ghcr.io/linuxserver/baseimage-alpine:3.20
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="nemchik"
+LABEL build_version="pagdot version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="pagdot"
 
-# install packages
 RUN \
+  echo "**** Add nginx repository ****" && \
+  curl https://nginx.org/keys/nginx_signing.key > /etc/apt/trusted.gpg.d/nginx.asc && \
+  echo "deb http://nginx.org/packages/ubuntu noble nginx" > /etc/apt/sources.list.d/nginx.list && \
+  echo "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx && \
+  apt update && \
   echo "**** install build packages ****" && \
-  apk add --no-cache \
+  apt install -y \
     apache2-utils \
     git \
     logrotate \
     nano \
     nginx \
     openssl \
-    php83 \
-    php83-ctype \
-    php83-curl \
-    php83-fileinfo \
-    php83-fpm \
-    php83-iconv \
-    php83-json \
-    php83-mbstring \
-    php83-openssl \
-    php83-phar \
-    php83-session \
-    php83-simplexml \
-    php83-xml \
-    php83-xmlwriter \
-    php83-zip \
-    php83-zlib && \
+    php8.3 \
+    php8.3-curl \
+    php8.3-fileinfo \
+    php8.3-fpm \
+    php8.3-mbstring \
+    php8.3-simplexml \
+    php8.3-xml \
+    php8.3-xmlwriter \
+    php8.3-zip && \
   echo "**** configure nginx ****" && \
   echo 'fastcgi_param  HTTP_PROXY         ""; # https://httpoxy.org/' >> \
     /etc/nginx/fastcgi_params && \
@@ -45,18 +42,25 @@ RUN \
     /etc/nginx/fastcgi_params && \
   rm -f /etc/nginx/conf.d/stream.conf && \
   rm -f /etc/nginx/http.d/default.conf && \
+  rm -f /etc/nginx/conf.d/* && \
   echo "**** guarantee correct php version is symlinked ****" && \
   if [ "$(readlink /usr/bin/php)" != "php83" ]; then \
     rm -rf /usr/bin/php && \
     ln -s /usr/bin/php83 /usr/bin/php; \
   fi && \
   echo "**** configure php ****" && \
-  sed -i "s#;error_log = log/php83/error.log.*#error_log = /config/log/php/error.log#g" \
-    /etc/php83/php-fpm.conf && \
-  sed -i "s#user = nobody.*#user = abc#g" \
-    /etc/php83/php-fpm.d/www.conf && \
-  sed -i "s#group = nobody.*#group = abc#g" \
-    /etc/php83/php-fpm.d/www.conf && \
+  sed -i "s#error_log = /var/log/php8.3-fpm.log.*#error_log = /config/log/php/error.log#g" \
+    /etc/php/8.3/fpm/php-fpm.conf && \
+  sed -i "s#user = www-data.*#user = abc#g" \
+    /etc/php/8.3/fpm/pool.d/www.conf && \
+  sed -i "s#group = www-data.*#group = abc#g" t\
+    /etc/php/8.3/fpm/pool.d/www.conf && \
+  sed -i "s#listen.owner = www-data.*#user = abc#g" \
+    /etc/php/8.3/fpm/pool.d/www.conf && \
+  sed -i "s#listen.group = www-data.*#group = abc#g" \
+    /etc/php/8.3/fpm/pool.d/www.conf && \
+  sed -i "s#listen = .*#listen = 127.0.0.1:9000#g" \
+    /etc/php/8.3/fpm/pool.d/www.conf && \
   echo "**** install php composer ****" && \
   EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')" && \
   php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -73,7 +77,13 @@ RUN \
   sed -i "s#/var/log/messages {}.*# #g" \
     /etc/logrotate.conf && \
   sed -i 's#/usr/sbin/logrotate /etc/logrotate.conf#/usr/sbin/logrotate /etc/logrotate.conf -s /config/log/logrotate.status#g' \
-    /etc/periodic/daily/logrotate
+    /etc/cron.daily/logrotate && \
+  echo "**** cleanup ****" && \
+  apt-get autoclean && \
+  rm -rf \
+    /var/lib/apt/lists/* \
+    /var/tmp/* \
+    /tmp/*
 
 # add local files
 COPY root/ /
