@@ -31,7 +31,7 @@ RUN \
   echo 'fastcgi_param  SERVER_NAME        $host; # Send HTTP_HOST as SERVER_NAME. If HTTP_HOST is blank, send the value of server_name from nginx (default is `_`)' >> \
     /etc/nginx/fastcgi_params && \
   rm -f /etc/nginx/http.d/default.conf && \
-  rm -rf /etc/nginx/conf.d/ && \
+  rm -f /etc/nginx/conf.d/* && \
   echo "**** configure php ****" && \
   sed -i "s#error_log = /var/log/php8.1-fpm.log.*#error_log = /config/log/php/error.log#g" \
     /etc/php/8.1/fpm/php-fpm.conf && \
