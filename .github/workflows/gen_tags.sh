@@ -1,6 +1,6 @@
 #!/bin/sh
 
-IMAGE_NAME=$(echo $REPO_NAME | | sed 's/docker-//g')
+IMAGE_NAME=$(echo $REPO_NAME | sed 's/docker-//g')
 
 VERSION=$(grep '^FROM ' Dockerfile | sed -E 's/.*:(.*)/\1/g')
 
