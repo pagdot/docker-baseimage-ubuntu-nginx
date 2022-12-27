@@ -1,4 +1,8 @@
 FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
+RUN echo Create patched banner && \
+    apk add patch && \
+    curl https://gist.githubusercontent.com/pagdot/64e28eb0ea68f502f3ead439ae07c249/raw/447bc60a9a7191e70d146cfcdf3996046ae63f41/lsio_pagdot_banner.patch | patch -p1 /etc/s6-overlay/s6-rc.d/init-adduser/run
+
 
 RUN \
   echo "**** Add nginx repository ****" && \
@@ -10,6 +14,8 @@ RUN \
   apt install -y \
     apache2-utils \
     git \
+    curl \
+    patch \
     logrotate \
     nano \
     nginx \
@@ -48,6 +54,9 @@ RUN \
   echo "**** fix logrotate ****" && \
   sed -i 's#/usr/sbin/logrotate /etc/logrotate.conf#/usr/sbin/logrotate /etc/logrotate.conf -s /config/log/logrotate.status#g' \
     /etc/cron.daily/logrotate && \
+  echo "**** Patch banner ****" && \
+  curl https://gist.githubusercontent.com/pagdot/64e28eb0ea68f502f3ead439ae07c249/raw/447bc60a9a7191e70d146cfcdf3996046ae63f41/lsio_pagdot_banner.patch \
+    | patch -p1 /etc/s6-overlay/s6-rc.d/init-adduser/run && \
   echo "**** cleanup ****" && \
   apt-get autoclean && \
   rm -rf \
