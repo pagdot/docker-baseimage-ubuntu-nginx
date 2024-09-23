@@ -45,11 +45,6 @@ RUN \
   rm -f /etc/nginx/conf.d/stream.conf && \
   rm -f /etc/nginx/http.d/default.conf && \
   rm -f /etc/nginx/conf.d/* && \
-  echo "**** guarantee correct php version is symlinked ****" && \
-  if [ "$(readlink /usr/bin/php)" != "php83" ]; then \
-    rm -rf /usr/bin/php && \
-    ln -s /usr/bin/php83 /usr/bin/php; \
-  fi && \
   echo "**** configure php ****" && \
   sed -i "s#error_log = /var/log/php8.3-fpm.log.*#error_log = /config/log/php/error.log#g" \
     /etc/php/8.3/fpm/php-fpm.conf && \
