@@ -55,7 +55,7 @@ RUN \
     /etc/php/8.3/fpm/php-fpm.conf && \
   sed -i "s#user = www-data.*#user = abc#g" \
     /etc/php/8.3/fpm/pool.d/www.conf && \
-  sed -i "s#group = www-data.*#group = abc#g" t\
+  sed -i "s#group = www-data.*#group = abc#g" \
     /etc/php/8.3/fpm/pool.d/www.conf && \
   sed -i "s#listen.owner = www-data.*#user = abc#g" \
     /etc/php/8.3/fpm/pool.d/www.conf && \
