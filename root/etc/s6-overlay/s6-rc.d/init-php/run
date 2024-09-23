@@ -7,7 +7,8 @@ if [[ ! -f /config/log/php/error.log ]]; then
 fi
 
 # set default timezone
-printf "date.timezone = %s\\n" "${TZ:-UTC}" >/etc/php83/conf.d/30_timezone.ini
+printf "[Date]\\ndate.timezone = %s\\n" "${TZ:-UTC}" >/etc/php/8.3/fpm/conf.d/30_timezone.ini
+printf "[Date]\\ndate.timezone = %s\\n" "${TZ:-UTC}" >/etc/php/8.3/cli/conf.d/30_timezone.ini
 
 # create local php.ini if it doesn't exist, set local timezone
 if [[ ! -f /config/php/php-local.ini ]]; then
